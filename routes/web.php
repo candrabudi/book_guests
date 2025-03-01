@@ -21,6 +21,8 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('guests')->name('guests.')->group(function () {
         Route::get('/', [GuestController::class, 'index'])->name('index');
         Route::get('/pending', [GuestController::class, 'getPendingGuests'])->name('pending');
+        Route::get('/accepted', [GuestController::class, 'getAcceptedGuests'])->name('accepted');
+        Route::get('/disposition', [GuestController::class, 'getDispositionGuests'])->name('disposition');
         Route::get('/create', [GuestController::class, 'create'])->name('create');
         Route::get('/detail/{a}', [GuestController::class, 'detail'])->name('detail');
         Route::post('/update/{a}', [GuestController::class, 'update'])->name('update');

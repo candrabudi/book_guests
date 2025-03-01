@@ -50,23 +50,39 @@
                                 <i class='uil uil-number-square font-18 text-warning me-1'></i>
                                 <div>
                                     @if ($guest->status == 'pending')
-                                        <h5 class="mt-1 font-14"><span class="badge badge-warning-lighten font-14">Pending</span>
+                                        <h5 class="mt-1 font-14"><span
+                                                class="badge badge-warning-lighten font-14">Pending</span>
                                         </h5>
                                     @elseif ($guest->status == 'accepted')
-                                        <h5 class="mt-1 font-14"><span class="badge badge-success-lighten font-14">Diterima</span>
+                                        <h5 class="mt-1 font-14"><span
+                                                class="badge badge-success-lighten font-14">Diterima</span>
                                         </h5>
                                     @elseif($guest->status == 'disposition')
-                                        <h5 class="mt-1 font-14"><span class="badge badge-info-lighten font-14">Disposisi</span>
+                                        <h5 class="mt-1 font-14"><span
+                                                class="badge badge-info-lighten font-14">Disposisi</span>
                                         </h5>
                                     @elseif ($guest->status == 'rejected')
-                                        <h5 class="mt-1 font-14"><span class="badge badge-danger-lighten font-14">Disposisi</span>
+                                        <h5 class="mt-1 font-14"><span
+                                                class="badge badge-danger-lighten font-14">Disposisi</span>
                                         </h5>
                                     @elseif ($guest->status == 'reschedule')
-                                        <h5 class="mt-1 font-14"><span class="badge badge-secondary-lighten font-14">Reschedule</span>
+                                        <h5 class="mt-1 font-14"><span
+                                                class="badge badge-secondary-lighten font-14">Reschedule</span>
                                         </h5>
                                     @endif
                                 </div>
                             </div>
+                            @if ($guest->companion)
+                                <p class="mt-2 mb-1 text-muted fw-bold font-12 text-uppercase">Pendamping</p>
+                                <div class="d-flex">
+                                    <i class='uil uil-number-square font-18 text-warning me-1'></i>
+                                    <div>
+                                        <h5 class="mt-1 font-14">
+                                            {{ $guest->companion->companion_name }}
+                                        </h5>
+                                    </div>
+                                </div>
+                            @endif
                         </div>
                     </div>
 

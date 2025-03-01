@@ -81,7 +81,7 @@
                 let currentPage = 1;
 
                 function fetchGuests(page = 1, search = '', status = '') {
-                    axios.get(`/history/guests/list?page=${page}&search=${search}&per_page=${perPage}`)
+                    axios.get(`/history/guests/list?page=${page}&search=${search}&per_page=${perPage}&status=${status}`)
                         .then(response => {
                             const data = response.data;
                             const guests = data.data;
@@ -134,7 +134,7 @@
                                     ${getStatusBadge(guest.status)}
                                 </td>
                                 <td>${guest.appointment === 'yes' ? 'Ya' : 'Tidak'}</td>
-                                <td><a href="/guests/${guest.id}/detail" class="btn btn-sm btn-info">Detail</a></td>
+                                <td><a href="/guests/detail/${guest.id}" class="btn btn-sm btn-info">Detail</a></td>
                             </tr>
                         `;
                     });

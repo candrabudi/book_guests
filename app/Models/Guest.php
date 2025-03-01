@@ -20,4 +20,9 @@ class Guest extends Model
     {
         return $this->hasOne(Institution::class, 'id', 'institution_id');
     }
+
+    public function companion()
+    {
+        return $this->hasOne(Companion::class, 'id', 'companion_id');
+    }
 }

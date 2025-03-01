@@ -19,6 +19,7 @@ class HistoryGuestController extends Controller
     public function getHistoryGuests(Request $request)
     {
         $search = $request->input('search');
+        $status = $request->input('status');
         $perPage = $request->input('per_page', 10);
     
         $pendingGuests = Guest::join('identities as idt', 'idt.id', '=', 'guests.identity_id')
@@ -26,8 +27,13 @@ class HistoryGuestController extends Controller
             ->when($search, function ($query, $search) {
                 return $query->where(function ($q) use ($search) {
                     $q->where('idt.full_name', 'like', "%{$search}%")
-                        ->orWhere('idt.phone_number', 'like', "%{$search}%")
+                        ->orWhere('phone_number', 'like', "%{$search}%")
                         ->orWhere('inst.institution_name', 'like', "%{$search}%");
+                });
+            })
+            ->when($status, function ($query, $status) {
+                return $query->where(function ($q) use ($status) {
+                    $q->where('status', $status);
                 });
             })
             ->select('guests.*', 'idt.nik', 'idt.full_name', 'inst.institution_name')

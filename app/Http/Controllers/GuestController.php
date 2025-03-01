@@ -25,9 +25,17 @@ class GuestController extends Controller
         $pendingGuests = Guest::where('status', 'pending')
             ->whereDate('created_at', $dateNow)
             ->get();
+        
+        $acceptedGuests = Guest::where('status', 'accepted')
+            ->whereDate('created_at', $dateNow)
+            ->get();
+
+        $dispositionGuests = Guest::where('status', 'disposition')
+            ->whereDate('created_at', $dateNow)
+            ->get();
 
 
-        return view('guests.index', compact('queue', 'pendingGuests'));
+        return view('guests.index', compact('queue', 'pendingGuests', 'acceptedGuests', 'dispositionGuests'));
     }
 
     public function getPendingGuests(Request $request)
@@ -54,6 +62,55 @@ class GuestController extends Controller
     }
     
 
+    public function getAcceptedGuests(Request $request)
+    {
+        $dateNow = Carbon::now()->format('Y-m-d');
+        $search = $request->input('search');
+    
+        $acceptedGuests = Guest::join('identities as idt', 'idt.id', '=', 'guests.identity_id')
+            ->join('institutions as inst', 'inst.id', '=', 'guests.institution_id')
+            ->join('companions as cmp', 'cmp.id', '=', 'guests.companion_id')
+            ->where('guests.status', 'accepted')
+            ->whereDate('guests.created_at', $dateNow)
+            ->when($search, function ($query, $search) {
+                return $query->where(function ($q) use ($search) {
+                    $q->where('idt.full_name', 'like', "%{$search}%")
+                      ->orWhere('guests.phone_number', 'like', "%{$search}%")
+                      ->orWhere('inst.institution_name', 'like', "%{$search}%");
+                });
+            })
+            ->select('guests.*', 'idt.nik', 'idt.full_name', 'inst.institution_name', 'companion_name')
+            ->orderBy('queue_number', 'ASC')
+            ->get();
+    
+        return response()->json($acceptedGuests);
+    }
+    
+    public function getDispositionGuests(Request $request)
+    {
+        $dateNow = Carbon::now()->format('Y-m-d');
+        $search = $request->input('search');
+    
+        $acceptedGuests = Guest::join('identities as idt', 'idt.id', '=', 'guests.identity_id')
+            ->join('institutions as inst', 'inst.id', '=', 'guests.institution_id')
+            ->join('companions as cmp', 'cmp.id', '=', 'guests.companion_id')
+            ->where('guests.status', 'disposition')
+            ->whereDate('guests.created_at', $dateNow)
+            ->when($search, function ($query, $search) {
+                return $query->where(function ($q) use ($search) {
+                    $q->where('idt.full_name', 'like', "%{$search}%")
+                      ->orWhere('guests.phone_number', 'like', "%{$search}%")
+                      ->orWhere('inst.institution_name', 'like', "%{$search}%");
+                });
+            })
+            ->select('guests.*', 'idt.nik', 'idt.full_name', 'inst.institution_name', 'companion_name')
+            ->orderBy('queue_number', 'ASC')
+            ->get();
+    
+        return response()->json($acceptedGuests);
+    }
+    
+
     public function create()
     {
         
@@ -66,8 +123,8 @@ class GuestController extends Controller
 
     public function store(Request $request)
     {
-        if(!$request->full_name) {
-            return redirect()->back()->with('error', 'Please input nama lengkap pengunjung');
+        if (!$request->full_name) {
+            return response()->json(['message' => 'Nama lengkap pengunjung harus diisi!'], 400);
         }
 
         $dateNow = Carbon::now('Asia/Jakarta')->format('Y-m-d');
@@ -117,28 +174,15 @@ class GuestController extends Controller
             $store->status = 'pending';
             $store->save();
 
-            $options = [
-                'cluster' => 'ap1',
-                'useTLS' => true
-            ];
-            $pusher = new Pusher(
-                '4726565422b0bb85073b',
-                '022e6107fa3d41051e2b',
-                '1949892',
-                $options
-            );
-
-            $data['message'] = 'Guest added successfully: ' . $fullName;
-            $data['queue_number'] = $queue;
-            $pusher->trigger('guest-channel', 'guest-added', $data);
-
             DB::commit();
-            return redirect()->back()->with('success', 'Guest added successfully!');
+            
+            return response()->json(['message' => 'Guest added successfully!'], 200);
         } catch (\Exception $e) {
             DB::rollback();
-            return redirect()->back()->with('error', 'Failed to add guest. Please try again.');
+            return response()->json(['message' => 'Failed to add guest. Please try again.'], 500);
         }
     }
+
     
 
     public function detail($a)
