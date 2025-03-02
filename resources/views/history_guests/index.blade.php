@@ -147,6 +147,8 @@
                             return '<h5 class="my-0"><span class="badge badge-warning-lighten">Pending</span></h5>';
                         case 'accepted':
                             return '<h5 class="my-0"><span class="badge badge-success-lighten">Diterima</span></h5>';
+                        case 'completed':
+                            return '<h5 class="my-0"><span class="badge badge-success-lighten">Diterima</span></h5>';
                         case 'disposition':
                             return '<h5 class="my-0"><span class="badge badge-info-lighten">Disposisi</span></h5>';
                         case 'rejected':
