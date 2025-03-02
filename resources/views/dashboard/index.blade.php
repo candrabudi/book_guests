@@ -92,7 +92,7 @@
                     <div class="float-end">
                         <i class="mdi mdi-calendar-clock widget-icon"></i>
                     </div>
-                    <h5 class="text-muted fw-normal mt-0">Notulensi</h5>
+                    <h5 class="text-muted fw-normal mt-0">Total Tamu Selesai</h5>
                     <h3 class="mt-3 mb-3">{{ $countNotulensi }}</h3>
                 </div>
             </div>
