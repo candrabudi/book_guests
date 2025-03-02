@@ -141,7 +141,7 @@
         <div class="col-xl-6 col-lg-6">
             <div class="card card-h-100">
                 <div class="card-header">
-                    <h4 class="header-title">Comparison Hari ini dan Kemarin</h4>
+                    <h4 class="header-title">Analytic Visitor</h4>
                 </div>
                 <div class="card-body">
                     <div id="visitChart" class="apex-charts"></div>
