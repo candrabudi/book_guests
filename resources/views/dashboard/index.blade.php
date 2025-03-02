@@ -26,50 +26,13 @@
     </div>
 
     <div class="row">
-        <!-- Cards Section -->
         <div class="col-xl-3 col-lg-4">
             <div class="card widget-flat">
                 <div class="card-body">
                     <div class="float-end">
                         <i class="mdi mdi-account-multiple widget-icon"></i>
                     </div>
-                    <h5 class="text-muted fw-normal mt-0">Total Visitors</h5>
-                    <h3 class="mt-3 mb-3">{{ $totalVisitors }}</h3>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-lg-4">
-            <div class="card widget-flat">
-                <div class="card-body">
-                    <div class="float-end">
-                        <i class="mdi mdi-account-check widget-icon"></i>
-                    </div>
-                    <h5 class="text-muted fw-normal mt-0">Average Visits</h5>
-                    <h3 class="mt-3 mb-3">{{ round($averageVisits) }}</h3>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-lg-4">
-            <div class="card widget-flat">
-                <div class="card-body">
-                    <div class="float-end">
-                        <i class="mdi mdi-account-remove widget-icon"></i>
-                    </div>
-                    <h5 class="text-muted fw-normal mt-0">Similarity Percentage</h5>
-                    <h3 class="mt-3 mb-3">{{ round($similarityPercentage, 2) }}%</h3>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-lg-4">
-            <div class="card widget-flat">
-                <div class="card-body">
-                    <div class="float-end">
-                        <i class="mdi mdi-account-multiple widget-icon"></i>
-                    </div>
-                    <h5 class="text-muted fw-normal mt-0">Pending Guests</h5>
+                    <h5 class="text-muted fw-normal mt-0">Total Tamu Pending</h5>
                     <h3 class="mt-3 mb-3">{{ $pendingGuests }}</h3>
                 </div>
             </div>
@@ -81,7 +44,7 @@
                     <div class="float-end">
                         <i class="mdi mdi-account-check widget-icon"></i>
                     </div>
-                    <h5 class="text-muted fw-normal mt-0">Accepted Guests</h5>
+                    <h5 class="text-muted fw-normal mt-0">Total Tamu Diterima</h5>
                     <h3 class="mt-3 mb-3">{{ $acceptedGuests }}</h3>
                 </div>
             </div>
@@ -93,7 +56,7 @@
                     <div class="float-end">
                         <i class="mdi mdi-account-remove widget-icon"></i>
                     </div>
-                    <h5 class="text-muted fw-normal mt-0">Rejected Guests</h5>
+                    <h5 class="text-muted fw-normal mt-0">Total Tamu Ditolak</h5>
                     <h3 class="mt-3 mb-3">{{ $rejectedGuests }}</h3>
                 </div>
             </div>
@@ -105,7 +68,7 @@
                     <div class="float-end">
                         <i class="mdi mdi-account-alert widget-icon"></i>
                     </div>
-                    <h5 class="text-muted fw-normal mt-0">Disposition Guests</h5>
+                    <h5 class="text-muted fw-normal mt-0">Total Tamu Diposisi</h5>
                     <h3 class="mt-3 mb-3">{{ $dispositionGuests }}</h3>
                 </div>
             </div>
@@ -117,7 +80,7 @@
                     <div class="float-end">
                         <i class="mdi mdi-calendar-clock widget-icon"></i>
                     </div>
-                    <h5 class="text-muted fw-normal mt-0">Rescheduled Guests</h5>
+                    <h5 class="text-muted fw-normal mt-0">Total Tamu Dijadwalkan Ulang</h5>
                     <h3 class="mt-3 mb-3">{{ $rescheduleGuests }}</h3>
                 </div>
             </div>
@@ -141,7 +104,7 @@
         <div class="col-xl-6 col-lg-6">
             <div class="card card-h-100">
                 <div class="card-header">
-                    <h4 class="header-title">Analytic Visitor</h4>
+                    <h4 class="header-title">Anilitik Pengunjung</h4>
                 </div>
                 <div class="card-body">
                     <div id="visitChart" class="apex-charts"></div>
@@ -152,7 +115,7 @@
         <div class="col-xl-6 col-lg-6">
             <div class="card card-h-100">
                 <div class="card-header">
-                    <h4 class="header-title">Guest Comparison Chart</h4>
+                    <h4 class="header-title">Komparasi Tamu</h4>
                 </div>
                 <div class="card-body">
                     <div id="guest-comparison-chart" class="apex-charts"></div>
@@ -163,7 +126,7 @@
         <div class="col-xl-6 col-lg-6">
             <div class="card card-h-100">
                 <div class="card-header">
-                    <h4 class="header-title">Comparison Sudah dan Belum Buat Janji</h4>
+                    <h4 class="header-title">Komparasi Sudah dan Belum Buat Janji</h4>
                 </div>
                 <div class="card-body">
                     <div id="appointmentChart" class="apex-charts"></div>
