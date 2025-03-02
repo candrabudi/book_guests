@@ -75,6 +75,25 @@
                 </div>
 
             </div>
+            
+            <div class="mt-2">
+                <h5 class="m-0 pb-2">
+                    <a class="text-dark" data-bs-toggle="collapse" href="#todayTasks" role="button" aria-expanded="false"
+                        aria-controls="todayTasks">
+                        <i class="uil uil-angle-down font-18"></i>Selesai <span
+                            class="text-muted">({{ count($completedGuests) }})</span>
+                    </a>
+                </h5>
+
+                <div class="collapse show" id="todayTasks">
+                    <div class="card mb-0">
+                        <div class="card-body" id="completedGuestsContainer">
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
 
             <div class="mt-2">
                 <h5 class="m-0 pb-2">
@@ -408,6 +427,57 @@
                     }
                 });
             }
+            
+            function loadCompletedGuests(searchQuery = '') {
+                $.ajax({
+                    url: "{{ route('guests.completed') }}",
+                    type: 'GET',
+                    data: {
+                        search: searchQuery
+                    },
+                    success: function(data) {
+                        let htmlContent = '';
+                        data.forEach(function(pg) {
+                            const createdAt = new Date(pg.created_at);
+                            const formattedDate = createdAt.getFullYear() + '/' +
+                                ('0' + (createdAt.getMonth() + 1)).slice(-2) + '/' +
+                                ('0' + createdAt.getDate()).slice(-2) + ' ' +
+                                ('0' + createdAt.getHours()).slice(-2) + ':' +
+                                ('0' + createdAt.getMinutes()).slice(-2);
+
+                            htmlContent += `
+                                <div class="row justify-content-between align-items-center py-3 border-bottom">
+                                    <div class="col-md-6 d-flex align-items-center">
+                                        <div class="queue-number-badge bg-primary text-white me-3 d-flex align-items-center justify-content-center">
+                                            ${pg.queue_number}
+                                        </div>
+                                        <div>
+                                            <h5 class="m-0">${toTitleCase(pg.full_name)} <small class="text-muted">[${pg.nik}]</small></h5>
+                                            <span class="d-block">${pg.institution_name}</span>
+                                            <span class="text-muted">[${pg.phone_number}]</span>
+                                            <span class="d-block text-muted"><strong>Pendamping:</strong> ${pg.companion_name ? pg.companion_name : '-'}</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 text-end">
+                                        <p class="mb-0">
+                                            <i class="uil uil-schedule font-16 me-1"></i>
+                                            ${formattedDate}
+                                        </p>
+                                        <span class="badge badge-info-lighten p-1">Disposisi</span>
+                                        ${pg.appointment == 'yes' 
+                                            ? '<span class="badge badge-success-lighten p-1">Sudah Janji</span>'
+                                            : '<span class="badge badge-danger-lighten p-1">Belum Janji</span>'}
+                                        <a href="/guests/detail/${pg.id}" class="btn btn-sm btn-info ms-2">Detail</a>
+                                    </div>
+                                </div>
+                            `;
+                        });
+
+
+                        $('#completedGuestsContainer').html(htmlContent);
+                    }
+                });
+            }
 
             $('#searchGuestsForm').submit(function(e) {
                 e.preventDefault();
@@ -415,6 +485,7 @@
                 loadPendingGuests(searchQuery);
                 loadAcceptedGuests(searchQuery);
                 loadDispositionGuests(searchQuery);
+                loadCompletedGuests(searchQuery);
             });
 
 
@@ -431,11 +502,13 @@
                 loadPendingGuests();
                 loadAcceptedGuests();
                 loadDispositionGuests();
+                loadCompletedGuests();
             });
 
             loadPendingGuests();
             loadAcceptedGuests();
             loadDispositionGuests();
+            loadCompletedGuests();
         </script>
     @endpush
 @endsection

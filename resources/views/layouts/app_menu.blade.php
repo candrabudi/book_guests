@@ -75,6 +75,12 @@
                     <span>  Data Notulensi</span>
                 </a>
             </li>
+            <li class="side-nav-item">
+                <a href="{{ route('visitors.index') }}" class="side-nav-link">
+                    <i class="uil-file-alt"></i>
+                    <span>  Data Pengunjung</span>
+                </a>
+            </li>
 
             @if (Auth::user()->role == "superadmin")
                 <li class="side-nav-item">

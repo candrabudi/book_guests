@@ -8,6 +8,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WebsiteSettingController;
 use App\Http\Controllers\NotulensiController;
+use App\Http\Controllers\VisitorController;
 
 Route::get('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/login/process', [AuthController::class, 'loginProcess'])->name('login.process');
@@ -23,6 +24,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/pending', [GuestController::class, 'getPendingGuests'])->name('pending');
         Route::get('/accepted', [GuestController::class, 'getAcceptedGuests'])->name('accepted');
         Route::get('/disposition', [GuestController::class, 'getDispositionGuests'])->name('disposition');
+        Route::get('/completed', [GuestController::class, 'getCompletedGuests'])->name('completed');
         Route::get('/create', [GuestController::class, 'create'])->name('create');
         Route::get('/detail/{a}', [GuestController::class, 'detail'])->name('detail');
         Route::post('/update/{a}', [GuestController::class, 'update'])->name('update');
@@ -40,6 +42,9 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/delete/{a}', [UserController::class, 'destroy'])->name('destroy');
     });
     Route::get('/notulensis', [NotulensiController::class, 'index'])->name('notulensis.index');
+
+    Route::get('/visitors', [VisitorController::class, 'index'])->name('visitors.index');
+    Route::get('/visitors/list', [VisitorController::class, 'list'])->name('visitors.list');
 
     Route::get('website-settings', [WebsiteSettingController::class, 'index'])->name('website_settings.index');
     Route::post('website-settings/create-or-update', [WebsiteSettingController::class, 'storeOrUpdate'])->name('website_settings.storeOrUpdate');

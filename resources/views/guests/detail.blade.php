@@ -10,7 +10,7 @@
     </div>
 
     <div class="row">
-        <div class="{{ $guest->status == 'accepted' ? 'col-xxl-7 col-xl-7' : 'col-xxl-8 col-xl-7' }} ">
+        <div class="{{ $guest->status == 'completed' || $guest->status == 'accepted' ? 'col-xxl-7 col-xl-7' : 'col-xxl-8 col-xl-7' }} ">
             <div class="card d-block">
                 <div class="card-body">
                     <h3 class="mt-3">
@@ -56,6 +56,10 @@
                                     @elseif ($guest->status == 'accepted')
                                         <h5 class="mt-1 font-14"><span
                                                 class="badge badge-success-lighten font-14">Diterima</span>
+                                        </h5>
+                                    @elseif ($guest->status == 'completed')
+                                        <h5 class="mt-1 font-14"><span
+                                                class="badge badge-success-lighten font-14">Selesai</span>
                                         </h5>
                                     @elseif($guest->status == 'disposition')
                                         <h5 class="mt-1 font-14"><span
@@ -126,7 +130,7 @@
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title mb-3">Update Data</h5>
-                        <form action="{{ route('guests.update', $guest->id) }}" method="POST">
+                        <form id="updateForm" action="{{ route('guests.update', $guest->id) }}" method="POST">
                             @csrf
 
                             <div class="mb-3">
@@ -198,7 +202,7 @@
                     </div>
                 </div>
             </div>
-        @elseif($guest->status == 'accepted' && $guest->notulensi)
+        @elseif($guest->status == 'completed' && $guest->notulensi)
             <div class="col-xxl-5 col-xl-5">
                 <div class="card">
                     <div class="card-body">
@@ -268,9 +272,7 @@
                 </div>
             </div>
         @endif
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"
-            integrity="sha512-AA1Bzp5Q0K1KanKKmvN/4d3IRKVlv9PYgwFPvm32nPO6QS8yH1HO7LbgB1pgiOxPtfeg5zEn2ba64MUcqJx6CA=="
-            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script>
             document.getElementById('statusSelect').addEventListener('change', function() {
                 var companionField = document.getElementById('companionField');
@@ -278,6 +280,29 @@
                     companionField.style.display = 'block';
                 } else {
                     companionField.style.display = 'none';
+                }
+            });
+
+            document.getElementById('updateForm').addEventListener('submit', function(event) {
+                var statusSelect = document.getElementById('statusSelect');
+                var companionField = document.getElementById('companionField');
+                var companionSelect = document.getElementById('companionSelect');
+
+                if (statusSelect.value === "") {
+                    event.preventDefault();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Status harus dipilih!',
+                    });
+                } else if ((statusSelect.value === 'accepted' || statusSelect.value === 'disposition') &&
+                    companionSelect.value === "") {
+                    event.preventDefault();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Pendamping harus dipilih!',
+                    });
                 }
             });
         </script>
@@ -314,34 +339,34 @@
                             .then(response => response.json())
                             .then(data => {
                                 if (data.success) {
-                                    swal({
+                                    Swal.fire({
                                         title: 'Success!',
                                         text: 'Form submitted successfully!',
                                         icon: 'success',
-                                        button: 'OK'
+                                        confirmButtonText: 'OK'
                                     }).then(() => {
                                         form.reset();
                                         window.location.reload();
                                     });
                                 } else {
-                                    swal({
+                                    Swal.fire({
                                         title: 'Failed',
                                         text: 'Failed to submit the form.',
                                         icon: 'error',
-                                        button: 'Try Again'
+                                        confirmButtonText: 'Try Again'
                                     });
                                 }
-
                             })
                             .catch(error => {
                                 console.error('Error:', error);
-                                swal({
+                                Swal.fire({
                                     title: 'Error',
                                     text: 'An error occurred. Please try again.',
                                     icon: 'error',
-                                    button: 'OK'
+                                    confirmButtonText: 'OK'
                                 });
                             });
+
                     });
                 </script>
             @endif

@@ -25,12 +25,13 @@
                                     <div class="d-flex align-items-center">
                                         <label for="status-select" class="me-2">Status</label>
                                         <select class="form-select" id="status-select">
-                                            <option value="">Choose...</option>
+                                            <option value="">Filter Status</option>
                                             <option value="pending">Pending</option>
                                             <option value="accepted">Diterima</option>
                                             <option value="disposition">Disposisi</option>
                                             <option value="reschedule">Reschedule</option>
                                             <option value="rejected">Ditolak</option>
+                                            <option value="completed">Selesai</option>
                                         </select>
                                     </div>
                                 </div>

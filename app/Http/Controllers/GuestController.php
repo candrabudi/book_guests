@@ -33,9 +33,13 @@ class GuestController extends Controller
         $dispositionGuests = Guest::where('status', 'disposition')
             ->whereDate('created_at', $dateNow)
             ->get();
+        
+        $completedGuests = Guest::where('status', 'completed')
+            ->whereDate('created_at', $dateNow)
+            ->get();
 
 
-        return view('guests.index', compact('queue', 'pendingGuests', 'acceptedGuests', 'dispositionGuests'));
+        return view('guests.index', compact('queue', 'pendingGuests', 'acceptedGuests', 'dispositionGuests','completedGuests'));
     }
 
     public function getPendingGuests(Request $request)
@@ -95,6 +99,30 @@ class GuestController extends Controller
             ->join('institutions as inst', 'inst.id', '=', 'guests.institution_id')
             ->join('companions as cmp', 'cmp.id', '=', 'guests.companion_id')
             ->where('guests.status', 'disposition')
+            ->whereDate('guests.created_at', $dateNow)
+            ->when($search, function ($query, $search) {
+                return $query->where(function ($q) use ($search) {
+                    $q->where('idt.full_name', 'like', "%{$search}%")
+                      ->orWhere('guests.phone_number', 'like', "%{$search}%")
+                      ->orWhere('inst.institution_name', 'like', "%{$search}%");
+                });
+            })
+            ->select('guests.*', 'idt.nik', 'idt.full_name', 'inst.institution_name', 'companion_name')
+            ->orderBy('queue_number', 'ASC')
+            ->get();
+    
+        return response()->json($acceptedGuests);
+    }
+    
+    public function getCompletedGuests(Request $request)
+    {
+        $dateNow = Carbon::now()->format('Y-m-d');
+        $search = $request->input('search');
+    
+        $acceptedGuests = Guest::join('identities as idt', 'idt.id', '=', 'guests.identity_id')
+            ->join('institutions as inst', 'inst.id', '=', 'guests.institution_id')
+            ->join('companions as cmp', 'cmp.id', '=', 'guests.companion_id')
+            ->where('guests.status', 'completed')
             ->whereDate('guests.created_at', $dateNow)
             ->when($search, function ($query, $search) {
                 return $query->where(function ($q) use ($search) {
@@ -215,6 +243,16 @@ class GuestController extends Controller
                 'photos.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
                 'appointment' => 'boolean',
             ]);
+
+            $cNotulensi = Notulensi::where('guest_id', $guestId)
+                ->first();
+            if($cNotulensi) {
+                return response()
+                    ->json([
+                        'success' => false,
+                        'message' => 'Duplicate Data Notulensi'
+                    ], 400);
+            }
     
             $notulensi = Notulensi::create([
                 'guest_id' => $guestId,
@@ -250,8 +288,11 @@ class GuestController extends Controller
                     ]);
                 }
             }
-            
-            
+
+            $guest = Guest::where('id', $guestId) 
+                ->first();
+            $guest->status = 'completed';
+            $guest->save();
     
             return response()->json(['success' => true, 'message' => 'Notulensi berhasil disimpan!'], 201);
         }catch(\Exception $e) {
