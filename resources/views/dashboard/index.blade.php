@@ -529,7 +529,7 @@
                 dataLabels: {
                     enabled: true,
                     formatter: function(val, opts) {
-                        return val.toFixed(1) + '%';
+                        return val.toFixed(1);
                     },
                     style: {
                         fontSize: '14px',
