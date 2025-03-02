@@ -240,7 +240,7 @@ class GuestController extends Controller
         try{
             $request->validate([
                 'notulensi' => 'required|string',
-                'photos.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+                'photos.*' => 'image|mimes:jpeg,png,jpg,gif',
                 'appointment' => 'boolean',
             ]);
 
