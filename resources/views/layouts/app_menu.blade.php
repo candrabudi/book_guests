@@ -81,6 +81,12 @@
                     <span>  Data Pengunjung</span>
                 </a>
             </li>
+            <li class="side-nav-item">
+                <a href="{{ route('companions.index') }}" class="side-nav-link">
+                    <i class="uil-file-alt"></i>
+                    <span>  Data Dinas</span>
+                </a>
+            </li>
 
             @if (Auth::user()->role == "superadmin")
                 <li class="side-nav-item">

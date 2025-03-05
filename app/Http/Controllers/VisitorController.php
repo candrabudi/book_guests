@@ -11,9 +11,9 @@ class VisitorController extends Controller
 {
     public function index()
     {
-        $query = Identity::select('nik', 'full_name')
+        $query = Identity::select('full_name', 'phone_number')
                         ->withCount('guests')
-                        ->groupBy('nik', 'full_name', 'id'); 
+                        ->groupBy('phone_number', 'full_name', 'id'); 
 
         $visitors = $query->get();
 
@@ -59,7 +59,7 @@ class VisitorController extends Controller
 
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('nik', 'like', '%' . $search . '%')
+                $q->where('phone_number', 'like', '%' . $search . '%')
                 ->orWhere('full_name', 'like', '%' . $search . '%');
             });
         }
@@ -90,12 +90,12 @@ class VisitorController extends Controller
             $isSimilarData = false;
             $similarityLabel = [];
             $similarNameDifferentNik = Identity::where('full_name', $visitor->full_name)
-                ->where('nik', '!=', $visitor->nik)
+                ->where('phone_number', '!=', $visitor->phone_number)
                 ->exists();
 
             if ($similarNameDifferentNik) {
                 $isSimilarData = true;
-                $similarityLabel[] = 'Nama mirip, NIK berbeda';
+                $similarityLabel[] = 'Nama mirip, Nomor Handphone berbeda';
             }
 
             $similarInstitution = Guest::where('institution_id', function ($subQuery) use ($visitor) {
@@ -109,7 +109,7 @@ class VisitorController extends Controller
 
             if ($similarInstitution) {
                 $isSimilarData = true;
-                $similarityLabel[] = 'Institusi sama, NIK berbeda';
+                $similarityLabel[] = 'Institusi sama, Nomor Handphone berbeda';
             }
 
             $visitCount = $visitor->guests_count;
@@ -127,7 +127,7 @@ class VisitorController extends Controller
             }
 
             return [
-                'nik' => $visitor->nik,
+                'phone_number' => $visitor->phone_number,
                 'full_name' => $visitor->full_name,
                 'guests_count' => $visitCount,
                 'visit_category' => $visitCategory,

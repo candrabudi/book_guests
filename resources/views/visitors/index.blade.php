@@ -68,7 +68,7 @@
                         <div class="col-md-4">
                             <label for="has_similarity">Cari Data (Berdasarkan: Nama)</label>
                             <input type="text" id="search" class="form-control"
-                                placeholder="Cari NIK atau Nama Lengkap" oninput="fetchData()" />
+                                placeholder="Cari Nomor Handphone atau Nama Lengkap" oninput="fetchData()" />
                         </div>
 
                         <div class="col-md-4">
@@ -99,7 +99,7 @@
                         <table class="table table-centered table-nowrap mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th>NIK</th>
+                                    <th>Nomor Handphone</th>
                                     <th>Nama Lengkap</th>
                                     <th>Total Berkunjung</th>
                                     <th>Kategori Kunjungan</th>
@@ -171,7 +171,7 @@
         
                         guestList += `
                             <tr>
-                                <td>${visitor.nik}</td>
+                                <td>${visitor.phone_number}</td>
                                 <td>${visitor.full_name}</td>
                                 <td>${visitor.guests_count}</td>
                                 <td>${visitCategoryText}</td>
