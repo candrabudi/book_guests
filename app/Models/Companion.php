@@ -12,6 +12,6 @@ class Companion extends Model
 
     public function guests()
     {
-        return $this->hasMany(Guest::class, 'companion_id');
+        return $this->hasMany(CompanionAssign::class, 'companion_id');
     }
 }

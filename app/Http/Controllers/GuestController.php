@@ -8,11 +8,14 @@ use App\Models\Companion;
 use App\Models\Guest;
 use App\Models\Notulensi;
 use App\Models\NotulensiPhoto;
+use App\Models\GuestPhoto;
+use App\Models\CompanionAssign;
 use App\Models\Identity;
 use App\Models\Institution;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 use Pusher\Pusher;
+use Auth;
 use DB;
 class GuestController extends Controller
 {
@@ -54,11 +57,11 @@ class GuestController extends Controller
             ->when($search, function ($query, $search) {
                 return $query->where(function ($q) use ($search) {
                     $q->where('idt.full_name', 'like', "%{$search}%")
-                      ->orWhere('guests.phone_number', 'like', "%{$search}%")
+                      ->orWhere('idt.phone_number', 'like', "%{$search}%")
                       ->orWhere('inst.institution_name', 'like', "%{$search}%");
                 });
             })
-            ->select('guests.*', 'idt.nik', 'idt.full_name', 'inst.institution_name')
+            ->select('guests.*', 'idt.phone_number', 'idt.full_name', 'inst.institution_name')
             ->orderBy('queue_number', 'ASC')
             ->get();
     
@@ -73,17 +76,17 @@ class GuestController extends Controller
     
         $acceptedGuests = Guest::join('identities as idt', 'idt.id', '=', 'guests.identity_id')
             ->join('institutions as inst', 'inst.id', '=', 'guests.institution_id')
-            ->join('companions as cmp', 'cmp.id', '=', 'guests.companion_id')
             ->where('guests.status', 'accepted')
+            ->with('companionAssign')
             ->whereDate('guests.created_at', $dateNow)
             ->when($search, function ($query, $search) {
                 return $query->where(function ($q) use ($search) {
                     $q->where('idt.full_name', 'like', "%{$search}%")
-                      ->orWhere('guests.phone_number', 'like', "%{$search}%")
+                      ->orWhere('idt.phone_number', 'like', "%{$search}%")
                       ->orWhere('inst.institution_name', 'like', "%{$search}%");
                 });
             })
-            ->select('guests.*', 'idt.nik', 'idt.full_name', 'inst.institution_name', 'companion_name')
+            ->select('guests.*', 'idt.phone_number', 'idt.full_name', 'inst.institution_name')
             ->orderBy('queue_number', 'ASC')
             ->get();
     
@@ -97,17 +100,17 @@ class GuestController extends Controller
     
         $acceptedGuests = Guest::join('identities as idt', 'idt.id', '=', 'guests.identity_id')
             ->join('institutions as inst', 'inst.id', '=', 'guests.institution_id')
-            ->join('companions as cmp', 'cmp.id', '=', 'guests.companion_id')
             ->where('guests.status', 'disposition')
+            ->with('companionAssign')
             ->whereDate('guests.created_at', $dateNow)
             ->when($search, function ($query, $search) {
                 return $query->where(function ($q) use ($search) {
                     $q->where('idt.full_name', 'like', "%{$search}%")
-                      ->orWhere('guests.phone_number', 'like', "%{$search}%")
-                      ->orWhere('inst.institution_name', 'like', "%{$search}%");
+                    ->orWhere('idt.phone_number', 'like', "%{$search}%")
+                    ->orWhere('inst.institution_name', 'like', "%{$search}%");
                 });
             })
-            ->select('guests.*', 'idt.nik', 'idt.full_name', 'inst.institution_name', 'companion_name')
+            ->select('guests.*', 'idt.phone_number', 'idt.full_name', 'inst.institution_name')
             ->orderBy('queue_number', 'ASC')
             ->get();
     
@@ -121,17 +124,17 @@ class GuestController extends Controller
     
         $acceptedGuests = Guest::join('identities as idt', 'idt.id', '=', 'guests.identity_id')
             ->join('institutions as inst', 'inst.id', '=', 'guests.institution_id')
-            ->join('companions as cmp', 'cmp.id', '=', 'guests.companion_id')
             ->where('guests.status', 'completed')
+            ->with('companionAssign')
             ->whereDate('guests.created_at', $dateNow)
             ->when($search, function ($query, $search) {
                 return $query->where(function ($q) use ($search) {
                     $q->where('idt.full_name', 'like', "%{$search}%")
-                      ->orWhere('guests.phone_number', 'like', "%{$search}%")
-                      ->orWhere('inst.institution_name', 'like', "%{$search}%");
+                    ->orWhere('idt.phone_number', 'like', "%{$search}%")
+                    ->orWhere('inst.institution_name', 'like', "%{$search}%");
                 });
             })
-            ->select('guests.*', 'idt.nik', 'idt.full_name', 'inst.institution_name', 'companion_name')
+            ->select('guests.*', 'idt.phone_number', 'idt.full_name', 'inst.institution_name')
             ->orderBy('queue_number', 'ASC')
             ->get();
     
@@ -158,17 +161,17 @@ class GuestController extends Controller
         $dateNow = Carbon::now('Asia/Jakarta')->format('Y-m-d');
         $queue = Guest::whereDate('created_at', $dateNow)->count() + 1;
 
-        $nik = strtoupper($request->nik);
+        $phone_number = $request->phone_number;
         $fullName = strtoupper($request->full_name);
-        $identity = Identity::where('nik', $nik)
-            ->orWhere('full_name', 'LIKE', '%' . $fullName . '%')
+        $identity = Identity::where('phone_number', $phone_number)
+            ->Where('full_name', $fullName)
             ->first();
             
         $identityID = 0;
         if (!$identity) {
             $storeIdentity = new Identity();
-            $storeIdentity->nik = $nik ?? null;
             $storeIdentity->full_name = $fullName;
+            $storeIdentity->phone_number = $phone_number;
             $storeIdentity->save();
             $identityID = $storeIdentity->id;
         } else {
@@ -193,21 +196,41 @@ class GuestController extends Controller
             $store->date = Carbon::now('Asia/Jakarta')->format('Y-m-d');
             $store->time = Carbon::now('Asia/Jakarta')->format('H:i');
             $store->identity_id = $identityID;
-            $store->phone_number = $request->phone_number;
             $store->institution_id = $institutionID;
             $store->total_audience = $request->total_audience;
             $store->appointment = $request->appointment;
             $store->purpose = $request->purpose;
             $store->queue_number = $queue;
             $store->status = 'pending';
+            $store->created_by = Auth::user()->id;
             $store->save();
+
+            if($request->appointment == "yes") {
+                if ($request->hasFile('photo')) {
+                    $photo = $request->file('photo');
+                    $originalExtension = $photo->getClientOriginalExtension();
+                    $newFileName = time() . '.' . $originalExtension;
+                    
+                    $photoPath = $photo->storeAs('notulensi_images', $newFileName, 'public');
+                    
+                    $fileSize = $photo->getSize();
+            
+                    GuestPhoto::create([
+                        'guest_id' => $store->id,
+                        'photo_path' => $photoPath,
+                        'file_name' => $newFileName,
+                        'file_size' => $fileSize,
+                        'file_extension' => $originalExtension,
+                    ]);
+                }
+            }
 
             DB::commit();
             
             return response()->json(['message' => 'Guest added successfully!'], 200);
         } catch (\Exception $e) {
             DB::rollback();
-            return response()->json(['message' => 'Failed to add guest. Please try again.'], 500);
+            return response()->json(['message' => 'Failed to add guest. Please try again. '.$e->getMessage()], 500);
         }
     }
 
@@ -223,14 +246,101 @@ class GuestController extends Controller
         return view('guests.detail', compact('guest', 'companions'));
     }
 
-    public function update(Request $request, $a)
+    public function edit($id)
+    {
+        $guest = Guest::findOrFail($id);
+
+        return view('guests.edit', compact('guest'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        if (!$request->full_name) {
+            return response()->json(['message' => 'Nama lengkap pengunjung harus diisi!'], 400);
+        }
+
+        $guest = Guest::findOrFail($id);
+        $dateNow = Carbon::now('Asia/Jakarta')->format('Y-m-d');
+        
+        $phone_number = $request->phone_number;
+        $fullName = strtoupper($request->full_name);
+        $identity = Identity::where('phone_number', $phone_number)
+            ->where('full_name', $fullName)
+            ->first();
+
+        $identityID = $identity ? $identity->id : $guest->identity_id;
+        if (!$identity) {
+            $identity = new Identity();
+            $identity->full_name = $fullName;
+            $identity->phone_number = $phone_number;
+            $identity->save();
+            $identityID = $identity->id;
+        }
+
+        $institutionName = strtoupper($request->institution);
+        $institution = Institution::where('institution_name', $institutionName)->first();
+        $institutionID = $institution ? $institution->id : $guest->institution_id;
+        if (!$institution) {
+            $institution = new Institution();
+            $institution->institution_name = $institutionName;
+            $institution->save();
+            $institutionID = $institution->id;
+        }
+
+        DB::beginTransaction();
+        try {
+            $guest->identity_id = $identityID;
+            $guest->institution_id = $institutionID;
+            $guest->total_audience = $request->total_audience;
+            $guest->appointment = $request->appointment;
+            $guest->purpose = $request->purpose;
+            $guest->status = 'pending';
+            $guest->updated_by = Auth::user()->id;
+            $guest->save();
+
+            if ($request->appointment == "yes" && $request->hasFile('photo')) {
+                $photo = $request->file('photo');
+                $originalExtension = $photo->getClientOriginalExtension();
+                $newFileName = time() . '.' . $originalExtension;
+                $photoPath = $photo->storeAs('notulensi_images', $newFileName, 'public');
+                $fileSize = $photo->getSize();
+                
+                $guest->guestPhoto()->updateOrCreate(
+                    ['guest_id' => $guest->id],
+                    [
+                        'photo_path' => $photoPath,
+                        'file_name' => $newFileName,
+                        'file_size' => $fileSize,
+                        'file_extension' => $originalExtension,
+                    ]
+                );
+            }
+
+            DB::commit();
+            return response()->json(['message' => 'Guest updated successfully!'], 200);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json(['message' => 'Failed to update guest. Please try again. '.$e->getMessage()], 500);
+        }
+    }
+
+
+    public function updateStatus(Request $request, $a)
     {
         $guest = Guest::where('id', $a)
             ->first();
 
         $guest->status = $request->status;
-        $guest->companion_id = $request->status == 'accepted' || $request->status == 'disposition' ? $request->companion_id : null;
         $guest->save();
+
+        if($request->status == 'accepted' || $request->status == 'disposition') {
+            foreach($request->companion_id as $companion_id) {
+                $assignCompanion = new CompanionAssign();
+                $assignCompanion->guest_id = $a;
+                $assignCompanion->companion_id = $companion_id;
+                $assignCompanion->save();
+            }
+        }
 
         return redirect()->back();
     }

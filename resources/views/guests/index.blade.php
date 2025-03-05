@@ -75,7 +75,7 @@
                 </div>
 
             </div>
-            
+
             <div class="mt-2">
                 <h5 class="m-0 pb-2">
                     <a class="text-dark" data-bs-toggle="collapse" href="#todayTasks" role="button" aria-expanded="false"
@@ -121,7 +121,7 @@
                         <h4>Tambah Data Tamu</h4>
                     </div>
                     <div class="card-body">
-                        <form id="guestForm">
+                        <form id="guestForm" enctype="multipart/form-data">
                             @csrf
                             <div class="row">
                                 <div class="col-xl-12">
@@ -153,11 +153,6 @@
                                     </script>
 
                                     <div class="mb-3">
-                                        <label for="nik" class="form-label">NIK</label>
-                                        <input type="text" id="nik" name="nik" class="form-control"
-                                            placeholder="Masukan NIK Pengunjung" required>
-                                    </div>
-                                    <div class="mb-3">
                                         <label for="full_name" class="form-label">Nama Lengkap</label>
                                         <input type="text" id="full_name" name="full_name" class="form-control"
                                             placeholder="Masukan nama lengkap" required>
@@ -184,9 +179,15 @@
                                     <div class="mb-3">
                                         <label for="appointment" class="form-label">Sudah Buat Janji?</label>
                                         <select id="appointment" name="appointment" class="form-control" required>
+                                            <option value="">Pilih Apakah Sudah Buat Janji ?</option>
                                             <option value="yes">Yes</option>
                                             <option value="no">No</option>
                                         </select>
+                                    </div>
+
+                                    <div class="mb-3" id="photoUpload" style="display: none;">
+                                        <label for="photo" class="form-label">Upload Foto</label>
+                                        <input type="file" id="photo" name="photo" class="form-control">
                                     </div>
 
                                     <div class="mb-3">
@@ -220,11 +221,20 @@
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
         <script>
+            document.getElementById('appointment').addEventListener('change', function() {
+                const photoUpload = document.getElementById('photoUpload');
+                if (this.value === 'yes') {
+                    photoUpload.style.display = 'block';
+                } else {
+                    photoUpload.style.display = 'none';
+                }
+            });
+
             document.getElementById('submitGuestForm').addEventListener('click', function() {
                 const form = document.getElementById('guestForm');
 
-                const requiredFields = ['nik', 'full_name', 'phone_number', 'institution', 'total_audience',
-                    'appointment', 'purpose'
+                const requiredFields = ['full_name', 'phone_number', 'institution', 'total_audience', 'appointment',
+                    'purpose'
                 ];
                 let isValid = true;
 
@@ -291,33 +301,34 @@
                                 ('0' + createdAt.getMinutes()).slice(-2);
 
                             htmlContent += `
-                                <div class="row justify-content-between align-items-center py-3 border-bottom">
-                                    <div class="col-md-6 d-flex align-items-center">
-                                        <!-- Queue number -->
-                                        <div class="queue-number-badge bg-primary text-white me-3 d-flex align-items-center justify-content-center">
-                                            ${pg.queue_number}
-                                        </div>
-                                        <!-- Full name, NIK, institution, phone number -->
-                                        <div>
-                                            <h5 class="m-0">${toTitleCase(pg.full_name)} <small class="text-muted">[${pg.nik}]</small></h5>
-                                            <span class="d-block">${pg.institution_name}</span>
-                                            <span class="text-muted">[${pg.phone_number}]</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 text-end">
-                                        <!-- Appointment date, status badges, and action button -->
-                                        <p class="mb-0">
-                                            <i class="uil uil-schedule font-16 me-1"></i>
-                                            ${formattedDate}
-                                        </p>
-                                        <span class="badge badge-warning-lighten p-1">Pending</span>
-                                        ${pg.appointment == 'yes' 
-                                            ? '<span class="badge badge-success-lighten p-1">Sudah Janji</span>'
-                                            : '<span class="badge badge-danger-lighten p-1">Belum Janji</span>'}
-                                        <a href="/guests/detail/${pg.id}" class="btn btn-sm btn-info ms-2">Detail</a>
-                                    </div>
-                                </div>
-                            `;
+                    <div class="row justify-content-between align-items-center py-3 border-bottom">
+                        <div class="col-md-6 d-flex align-items-center">
+                            <!-- Queue number -->
+                            <div class="queue-number-badge bg-primary text-white me-3 d-flex align-items-center justify-content-center">
+                                ${pg.queue_number}
+                            </div>
+                            <!-- Full name, NIK, institution, phone number -->
+                            <div>
+                                <h5 class="m-0">${toTitleCase(pg.full_name)} <small class="text-muted">[${pg.nik}]</small></h5>
+                                <span class="d-block">${pg.institution_name}</span>
+                                <span class="text-muted">[${pg.phone_number}]</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <!-- Appointment date, status badges, and action buttons -->
+                            <p class="mb-0">
+                                <i class="uil uil-schedule font-16 me-1"></i>
+                                ${formattedDate}
+                            </p>
+                            <span class="badge badge-warning-lighten p-1">Pending</span>
+                            ${pg.appointment == 'yes' 
+                                ? '<span class="badge badge-success-lighten p-1">Sudah Janji</span>'
+                                : '<span class="badge badge-danger-lighten p-1">Belum Janji</span>'}
+                            <a href="/guests/detail/${pg.id}" class="btn btn-sm btn-info ms-2">Detail</a>
+                            <a href="/guests/edit/${pg.id}" class="btn btn-sm btn-warning ms-2">Edit</a>
+                        </div>
+                    </div>
+                `;
                         });
 
                         $('#pendingGuestsContainer').html(htmlContent);
@@ -343,6 +354,17 @@
                                 ('0' + createdAt.getHours()).slice(-2) + ':' +
                                 ('0' + createdAt.getMinutes()).slice(-2);
 
+                            // Create companion badges dynamically
+                            let companionBadges = '';
+                            if (pg.companion_assign && pg.companion_assign.length > 0) {
+                                pg.companion_assign.forEach(function(companion) {
+                                    companionBadges +=
+                                        `<span class="badge bg-info me-1">${companion.companion.companion_name}</span>`;
+                                });
+                            } else {
+                                companionBadges = '-';
+                            }
+
                             htmlContent += `
                                 <div class="row justify-content-between align-items-center py-3 border-bottom">
                                     <div class="col-md-6 d-flex align-items-center">
@@ -350,10 +372,10 @@
                                             ${pg.queue_number}
                                         </div>
                                         <div>
-                                            <h5 class="m-0">${toTitleCase(pg.full_name)} <small class="text-muted">[${pg.nik}]</small></h5>
+                                            <h5 class="m-0">${toTitleCase(pg.full_name)}</h5>
                                             <span class="d-block">${pg.institution_name}</span>
                                             <span class="text-muted">[${pg.phone_number}]</span>
-                                            <span class="d-block text-muted"><strong>Pendamping:</strong> ${pg.companion_name ? pg.companion_name : '-'}</span>
+                                            <span class="d-block text-muted"><strong>Pendamping:</strong> ${companionBadges}</span>
                                         </div>
                                     </div>
                                     <div class="col-md-6 text-end">
@@ -371,11 +393,11 @@
                             `;
                         });
 
-
                         $('#acceptedGuestsContainer').html(htmlContent);
                     }
                 });
             }
+
 
             function loadDispositionGuests(searchQuery = '') {
                 $.ajax({
@@ -401,10 +423,10 @@
                                             ${pg.queue_number}
                                         </div>
                                         <div>
-                                            <h5 class="m-0">${toTitleCase(pg.full_name)} <small class="text-muted">[${pg.nik}]</small></h5>
+                                            <h5 class="m-0">${toTitleCase(pg.full_name)}</h5>
                                             <span class="d-block">${pg.institution_name}</span>
                                             <span class="text-muted">[${pg.phone_number}]</span>
-                                            <span class="d-block text-muted"><strong>Pendamping:</strong> ${pg.companion_name ? pg.companion_name : '-'}</span>
+                                            <span class="d-block text-muted"><strong>Pendamping:</strong> ${companionBadges}</span>
                                         </div>
                                     </div>
                                     <div class="col-md-6 text-end">
@@ -412,7 +434,7 @@
                                             <i class="uil uil-schedule font-16 me-1"></i>
                                             ${formattedDate}
                                         </p>
-                                        <span class="badge badge-info-lighten p-1">Disposisi</span>
+                                        <span class="badge badge-success-lighten p-1">Diterima</span>
                                         ${pg.appointment == 'yes' 
                                             ? '<span class="badge badge-success-lighten p-1">Sudah Janji</span>'
                                             : '<span class="badge badge-danger-lighten p-1">Belum Janji</span>'}
@@ -427,7 +449,7 @@
                     }
                 });
             }
-            
+
             function loadCompletedGuests(searchQuery = '') {
                 $.ajax({
                     url: "{{ route('guests.completed') }}",

@@ -33,7 +33,7 @@
                         <i class="mdi mdi-account-multiple widget-icon"></i>
                     </div>
                     <h5 class="text-muted fw-normal mt-0">Total Tamu Pending</h5>
-                    <h3 class="mt-3 mb-3">{{ $pendingGuests }}</h3>
+                    <h3 class="mt-3 mb-3">{{ $statusCounts['pendingGuests'] }}</h3>
                 </div>
             </div>
         </div>
@@ -45,7 +45,7 @@
                         <i class="mdi mdi-account-check widget-icon"></i>
                     </div>
                     <h5 class="text-muted fw-normal mt-0">Total Tamu Diterima</h5>
-                    <h3 class="mt-3 mb-3">{{ $acceptedGuests }}</h3>
+                    <h3 class="mt-3 mb-3">{{ $statusCounts['acceptedGuests'] }}</h3>
                 </div>
             </div>
         </div>
@@ -57,7 +57,7 @@
                         <i class="mdi mdi-account-remove widget-icon"></i>
                     </div>
                     <h5 class="text-muted fw-normal mt-0">Total Tamu Ditolak</h5>
-                    <h3 class="mt-3 mb-3">{{ $rejectedGuests }}</h3>
+                    <h3 class="mt-3 mb-3">{{ $statusCounts['rejectedGuests'] }}</h3>
                 </div>
             </div>
         </div>
@@ -69,7 +69,7 @@
                         <i class="mdi mdi-account-alert widget-icon"></i>
                     </div>
                     <h5 class="text-muted fw-normal mt-0">Total Tamu Diposisi</h5>
-                    <h3 class="mt-3 mb-3">{{ $dispositionGuests }}</h3>
+                    <h3 class="mt-3 mb-3">{{ $statusCounts['dispositionGuests'] }}</h3>
                 </div>
             </div>
         </div>
@@ -81,7 +81,7 @@
                         <i class="mdi mdi-calendar-clock widget-icon"></i>
                     </div>
                     <h5 class="text-muted fw-normal mt-0">Total Tamu Dijadwalkan Ulang</h5>
-                    <h3 class="mt-3 mb-3">{{ $rescheduleGuests }}</h3>
+                    <h3 class="mt-3 mb-3">{{ $statusCounts['rescheduleGuests'] }}</h3>
                 </div>
             </div>
         </div>
@@ -93,7 +93,7 @@
                         <i class="mdi mdi-calendar-clock widget-icon"></i>
                     </div>
                     <h5 class="text-muted fw-normal mt-0">Total Tamu Selesai</h5>
-                    <h3 class="mt-3 mb-3">{{ $countNotulensi }}</h3>
+                    <h3 class="mt-3 mb-3">{{ $statusCounts['completedGuests'] }}</h3>
                 </div>
             </div>
         </div>

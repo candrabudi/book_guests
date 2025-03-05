@@ -25,4 +25,15 @@ class Guest extends Model
     {
         return $this->hasOne(Companion::class, 'id', 'companion_id');
     }
+
+    public function guestPhoto()
+    {
+        return $this->hasOne(GuestPhoto::class, 'guest_id', 'id');
+    }
+
+    public function companionAssign()
+    {
+        return $this->hasMany(CompanionAssign::class, 'guest_id', 'id')
+            ->with('companion');
+    }
 }

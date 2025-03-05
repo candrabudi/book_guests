@@ -15,30 +15,21 @@ class DashboardController extends Controller
     public function index()
     {
         $dateNow = Carbon::now()->format('Y-m-d');
-        $pendingGuests = Guest::whereDate('created_at', $dateNow)
-            ->where('status', 'pending')
-            ->count();
+        $guestStatuses = Guest::select('status', \DB::raw('count(*) as total'))
+            ->whereDate('created_at', $dateNow)
+            ->groupBy('status')
+            ->pluck('total', 'status');
 
-        $acceptedGuests = Guest::whereDate('created_at', $dateNow)
-            ->where('status', 'accepted')
-            ->count();
+        $statusCounts = [
+            'pendingGuests' => $guestStatuses['pending'] ?? 0,
+            'acceptedGuests' => $guestStatuses['accepted'] ?? 0,
+            'rejectedGuests' => $guestStatuses['rejected'] ?? 0,
+            'dispositionGuests' => $guestStatuses['disposition'] ?? 0,
+            'rescheduleGuests' => $guestStatuses['reschedule'] ?? 0,
+            'completedGuests' => $guestStatuses['completed'] ?? 0
+        ];
 
-        $rejectedGuests = Guest::whereDate('created_at', $dateNow)
-            ->where('status', 'rejected')
-            ->count();
-
-        $dispositionGuests = Guest::whereDate('created_at', $dateNow)
-            ->where('status', 'disposition')
-            ->count();
-        
-        $rescheduleGuests = Guest::whereDate('created_at', $dateNow)
-            ->where('status', 'reschedule')
-            ->count();
-        
-        $countNotulensi = Notulensi::whereDate('created_at', $dateNow)
-            ->count();
-
-
+        $countNotulensi = Notulensi::whereDate('created_at', $dateNow)->count();
         $yesCount = Guest::where('appointment', 'yes')->count();
         $noCount = Guest::where('appointment', 'no')->count();
 
@@ -49,15 +40,15 @@ class DashboardController extends Controller
         $companionNames = $companions->pluck('companion_name');
         $companionCounts = $companions->pluck('guests_count');
 
-
-        $query = Identity::withCount('guests')->with('guests.institution');
-
-        $dataVisitors = $query->get();
+        // Visitor data
+        $dataVisitors = Identity::withCount('guests')
+            ->with('guests.institution')
+            ->get();
 
         $totalVisitors = $dataVisitors->count();
         $totalSimilarData = 0;
         $totalVisits = 0;
-        
+
         $chartData = [
             'visitCategories' => [
                 '1x' => 0,
@@ -68,99 +59,90 @@ class DashboardController extends Controller
             ]
         ];
 
-        $dataVisitors->transform(function ($visitor) use (&$totalSimilarData, &$totalVisits, &$chartData) {
-        $isSimilarData = false;
-        $similarityLabel = [];
-        
-        $similarNameDifferentNik = Identity::where('full_name', $visitor->full_name)
-            ->where('nik', '!=', $visitor->nik)
-            ->exists();
+        foreach ($dataVisitors as $visitor) {
+            $isSimilarData = false;
+            $similarityLabel = [];
 
-        if ($similarNameDifferentNik) {
-            $isSimilarData = true;
-            $similarityLabel[] = 'Nama mirip, NIK berbeda';
+            $similarNameDifferentNik = Identity::where('full_name', $visitor->full_name)
+                ->where('phone_number', '!=', $visitor->nik)
+                ->exists();
+
+            $similarInstitution = Guest::where('institution_id', $visitor->guests->first()->institution_id ?? null)
+                ->where('identity_id', '!=', $visitor->id)
+                ->exists();
+
+            if ($similarNameDifferentNik || $similarInstitution) {
+                $isSimilarData = true;
+                if ($similarNameDifferentNik) {
+                    $similarityLabel[] = 'Nama mirip, Nomor Handphone berbeda';
+                }
+                if ($similarInstitution) {
+                    $similarityLabel[] = 'Institusi sama, Nomor Handphone berbeda';
+                }
+                $totalSimilarData++;
+            }
+
+            $visitCount = $visitor->guests_count;
+            $visitCategory = $this->categorizeVisit($visitCount, $chartData);
+            $totalVisits += $visitCount;
+
+            $visitor->is_similar_data = $isSimilarData;
+            $visitor->similarity_label = $similarityLabel;
+            $visitor->visit_category = $visitCategory;
         }
-
-        $similarInstitution = Guest::where('institution_id', function ($subQuery) use ($visitor) {
-                $subQuery->select('institution_id')
-                        ->from('guests')
-                        ->where('identity_id', $visitor->id)
-                        ->limit(1);
-            })
-            ->where('identity_id', '!=', $visitor->id)
-            ->exists();
-
-        if ($similarInstitution) {
-            $isSimilarData = true;
-            $similarityLabel[] = 'Institusi sama, NIK berbeda';
-        }
-
-        $visitCount = $visitor->guests_count;
-        $visitCategory = '';
-
-        // Kategori kunjungan
-        if ($visitCount == 1) {
-            $visitCategory = '1x';
-            $chartData['visitCategories']['1x']++;
-        } elseif ($visitCount > 1 && $visitCount <= 3) {
-            $visitCategory = 'more_than_1x';
-            $chartData['visitCategories']['more_than_1x']++;
-        } elseif ($visitCount > 3 && $visitCount <= 5) {
-            $visitCategory = 'more_than_3x';
-            $chartData['visitCategories']['more_than_3x']++;
-        } elseif ($visitCount > 5 && $visitCount <= 10) {
-            $visitCategory = 'more_than_5x';
-            $chartData['visitCategories']['more_than_5x']++;
-        } elseif ($visitCount > 10) {
-            $visitCategory = 'more_than_10x';
-            $chartData['visitCategories']['more_than_10x']++;
-        }
-
-        if ($isSimilarData) {
-            $totalSimilarData++;
-        }
-        $totalVisits += $visitCount;
-
-        return [
-                'nik' => $visitor->nik,
-                'full_name' => $visitor->full_name,
-                'guests_count' => $visitCount,
-                'visit_category' => $visitCategory,
-                'is_similar_data' => $isSimilarData,
-                'similarity_label' => $similarityLabel,
-            ];
-        });
 
         $similarityPercentage = ($totalSimilarData / $totalVisitors) * 100;
         $averageVisits = $totalVisits / $totalVisitors;
 
-    
-        return view('dashboard.index', 
-            compact(
-                'pendingGuests', 'acceptedGuests', 'rejectedGuests', 
-                'dispositionGuests', 'rescheduleGuests', 'countNotulensi', 
-                'yesCount', 'noCount', 'companionNames', 
-                'companionCounts', 'dataVisitors', 'chartData', 
-                'similarityPercentage', 'averageVisits', 'totalVisitors'
-            )
-        );
+        return view('dashboard.index', compact(
+            'statusCounts', 'countNotulensi', 'yesCount', 'noCount',
+            'companionNames', 'companionCounts', 'dataVisitors',
+            'chartData', 'similarityPercentage', 'averageVisits', 'totalVisitors'
+        ));
+    }
+
+    private function categorizeVisit($visitCount, &$chartData)
+    {
+        if ($visitCount == 1) {
+            $chartData['visitCategories']['1x']++;
+            return '1x';
+        } elseif ($visitCount > 1 && $visitCount <= 3) {
+            $chartData['visitCategories']['more_than_1x']++;
+            return 'more_than_1x';
+        } elseif ($visitCount > 3 && $visitCount <= 5) {
+            $chartData['visitCategories']['more_than_3x']++;
+            return 'more_than_3x';
+        } elseif ($visitCount > 5 && $visitCount <= 10) {
+            $chartData['visitCategories']['more_than_5x']++;
+            return 'more_than_5x';
+        } else {
+            $chartData['visitCategories']['more_than_10x']++;
+            return 'more_than_10x';
+        }
     }
 
     public function getGuestComparison()
     {
         $today = Carbon::today();
         $yesterday = Carbon::yesterday();
-        $todayData = Guest::select('status', \DB::raw('count(*) as total'))
-            ->whereDate('created_at', $today)
-            ->groupBy('status')
-            ->pluck('total', 'status')->toArray();
-        $yesterdayData = Guest::select('status', \DB::raw('count(*) as total'))
-            ->whereDate('created_at', $yesterday)
-            ->groupBy('status')
-            ->pluck('total', 'status')->toArray();
+
+        $todayData = $this->getGuestStatusByDate($today);
+        $yesterdayData = $this->getGuestStatusByDate($yesterday);
+
         return response()->json([
             'today' => $todayData,
             'yesterday' => $yesterdayData
         ]);
     }
+
+    private function getGuestStatusByDate($date)
+    {
+        return Guest::select('status', \DB::raw('count(*) as total'))
+            ->whereDate('created_at', $date)
+            ->groupBy('status')
+            ->pluck('total', 'status')
+            ->toArray();
+    }
+
+
 }

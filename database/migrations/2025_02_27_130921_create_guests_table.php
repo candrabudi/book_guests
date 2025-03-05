@@ -16,7 +16,6 @@ return new class extends Migration
             $table->date('date');
             $table->time('time');
             $table->foreignId('identity_id');
-            $table->string('phone_number');
             $table->foreignId('institution_id'); 
             $table->integer('companion_id')->nullable();
             $table->enum('appointment', ['yes', 'no']);
@@ -24,6 +23,8 @@ return new class extends Migration
             $table->integer('total_audience');
             $table->integer('queue_number');
             $table->enum('status', ['pending', 'disposition', 'accepted', 'rejected', 'reschedule']);
+            $table->bigInteger('created_by');
+            $table->bigInteger('updated_by')->nullable();
             $table->timestamps();
         });
     }

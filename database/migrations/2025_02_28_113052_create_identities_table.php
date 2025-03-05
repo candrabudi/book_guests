@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('identities', function (Blueprint $table) {
             $table->id();
-            $table->string('nik')->nullable();
             $table->string('full_name');
+            $table->string('phone_number');
             $table->timestamps();
         });
     }

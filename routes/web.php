@@ -9,6 +9,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\WebsiteSettingController;
 use App\Http\Controllers\NotulensiController;
 use App\Http\Controllers\VisitorController;
+use App\Http\Controllers\CompanionController;
 
 Route::get('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/login/process', [AuthController::class, 'loginProcess'])->name('login.process');
@@ -27,7 +28,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/completed', [GuestController::class, 'getCompletedGuests'])->name('completed');
         Route::get('/create', [GuestController::class, 'create'])->name('create');
         Route::get('/detail/{a}', [GuestController::class, 'detail'])->name('detail');
-        Route::post('/update/{a}', [GuestController::class, 'update'])->name('update');
+        Route::get('/edit/{a}', [GuestController::class, 'edit'])->name('edit');
+        Route::put('/update/{a}', [GuestController::class, 'update'])->name('update');
+        Route::post('/update-status/{a}', [GuestController::class, 'updateStatus'])->name('updateStatus');
         Route::post('/store', [GuestController::class, 'store'])->name('store');
         Route::post('/notulensi/store/{a}', [GuestController::class, 'guestNotulensiStore'])->name('guestNotulensiStore');
     });
@@ -48,4 +51,13 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('website-settings', [WebsiteSettingController::class, 'index'])->name('website_settings.index');
     Route::post('website-settings/create-or-update', [WebsiteSettingController::class, 'storeOrUpdate'])->name('website_settings.storeOrUpdate');
+
+
+    Route::get('/companions', [CompanionController::class, 'index'])->name('companions.index');
+    Route::get('/companions/list', [CompanionController::class, 'list'])->name('companions.list');
+    Route::post('/companions', [CompanionController::class, 'store'])->name('companions.store');
+    Route::get('/companions/{companion}/edit', [CompanionController::class, 'edit'])->name('companions.edit');
+    Route::put('/companions/{companion}', [CompanionController::class, 'update'])->name('companions.update');
+    Route::delete('/companions/{companion}', [CompanionController::class, 'destroy'])->name('companions.destroy');
+
 });

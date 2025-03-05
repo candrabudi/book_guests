@@ -10,119 +10,123 @@
     </div>
 
     <div class="row">
-        <div class="{{ $guest->status == 'completed' || $guest->status == 'accepted' ? 'col-xxl-7 col-xl-7' : 'col-xxl-8 col-xl-7' }} ">
+        <div
+            class="{{ $guest->status == 'completed' || $guest->status == 'accepted' ? 'col-xxl-7 col-xl-7' : 'col-xxl-8 col-xl-7' }}">
             <div class="card d-block">
                 <div class="card-body">
-                    <h3 class="mt-3">
-                        {{ $guest->identity->full_name }}
-                    </h3>
-                    <span>{{ $guest->institution->institution_name }}</span>
-                    <div class="row">
+                    <!-- Bagian Atas dengan Nama dan Tombol Edit -->
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="flex-grow-1">
+                            <h3 class="mt-3">{{ $guest->identity->full_name }}</h3>
+                            <span class="text-muted">{{ $guest->institution->institution_name }}</span>
+                        </div>
+                        <!-- Tombol Edit -->
+                        <div>
+                            <a href="{{ route('guests.edit', $guest->id) }}" class="btn btn-primary btn-sm">
+                                Edit
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
                         <div class="col-6">
                             <p class="mt-2 mb-1 text-muted fw-bold font-12 text-uppercase">Due Date</p>
-                            <div class="d-flex">
+                            <div class="d-flex align-items-center">
                                 <i class='uil uil-schedule font-18 text-success me-1'></i>
-                                <div>
-                                    <h5 class="mt-1 font-14">
-                                        {{ \Carbon\Carbon::parse($guest->created_at)->format('Y/m/d H:i') }}
-                                    </h5>
-                                </div>
+                                <h5 class="mt-1 font-14">
+                                    {{ \Carbon\Carbon::parse($guest->created_at)->format('Y/m/d H:i') }}</h5>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <p class="mt-2 mb-1 text-muted fw-bold font-12 text-uppercase">Status Janji</p>
+                            <div class="d-flex align-items-center">
+                                <i class='uil uil-check-circle font-18 text-primary me-1'></i>
+                                <h5 class="mt-1 font-14">
+                                    {{ $guest->appointment == 'yes' ? 'Sudah Membuat Janji' : 'Belum Membuat Janji' }}</h5>
                             </div>
                         </div>
                     </div>
 
                     <div class="row mt-3">
                         <div class="col-6">
-                            <p class="mt-2 mb-1 text-muted fw-bold font-12 text-uppercase">Status Janji</p>
-                            <div class="d-flex">
-                                <i class='uil uil-check-circle font-18 text-primary me-1'></i>
-                                <div>
-                                    <h5 class="mt-1 font-14">
-                                        {{ $guest->has_appointment == 'yes' ? 'Sudah Membuat Janji' : 'Belum Membuat Janji' }}
-                                    </h5>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-6">
                             <p class="mt-2 mb-1 text-muted fw-bold font-12 text-uppercase">Status Tamu</p>
-                            <div class="d-flex">
+                            <div class="d-flex align-items-center">
                                 <i class='uil uil-number-square font-18 text-warning me-1'></i>
                                 <div>
                                     @if ($guest->status == 'pending')
-                                        <h5 class="mt-1 font-14"><span
-                                                class="badge badge-warning-lighten font-14">Pending</span>
-                                        </h5>
+                                        <h5 class="mt-1 font-14"><span class="badge bg-warning font-14">Pending</span></h5>
                                     @elseif ($guest->status == 'accepted')
-                                        <h5 class="mt-1 font-14"><span
-                                                class="badge badge-success-lighten font-14">Diterima</span>
-                                        </h5>
+                                        <h5 class="mt-1 font-14"><span class="badge bg-success font-14">Diterima</span></h5>
                                     @elseif ($guest->status == 'completed')
-                                        <h5 class="mt-1 font-14"><span
-                                                class="badge badge-success-lighten font-14">Selesai</span>
-                                        </h5>
+                                        <h5 class="mt-1 font-14"><span class="badge bg-success font-14">Selesai</span></h5>
                                     @elseif($guest->status == 'disposition')
-                                        <h5 class="mt-1 font-14"><span
-                                                class="badge badge-info-lighten font-14">Disposisi</span>
-                                        </h5>
+                                        <h5 class="mt-1 font-14"><span class="badge bg-info font-14">Disposisi</span></h5>
                                     @elseif ($guest->status == 'rejected')
-                                        <h5 class="mt-1 font-14"><span
-                                                class="badge badge-danger-lighten font-14">Disposisi</span>
-                                        </h5>
+                                        <h5 class="mt-1 font-14"><span class="badge bg-danger font-14">Ditolak</span></h5>
                                     @elseif ($guest->status == 'reschedule')
-                                        <h5 class="mt-1 font-14"><span
-                                                class="badge badge-secondary-lighten font-14">Reschedule</span>
+                                        <h5 class="mt-1 font-14"><span class="badge bg-secondary font-14">Reschedule</span>
                                         </h5>
                                     @endif
                                 </div>
                             </div>
-                            @if ($guest->companion)
+
+                            @if ($guest->companionAssign)
                                 <p class="mt-2 mb-1 text-muted fw-bold font-12 text-uppercase">Pendamping</p>
-                                <div class="d-flex">
-                                    <i class='uil uil-number-square font-18 text-warning me-1'></i>
-                                    <div>
-                                        <h5 class="mt-1 font-14">
-                                            {{ $guest->companion->companion_name }}
+                                <div class="d-flex align-items-center">
+                                    @foreach ($guest->companionAssign as $companion)
+                                        <h5 class="mt-1 me-1 font-14 badge bg-success mt-2">
+                                            {{ $companion->companion->companion_name }}
                                         </h5>
-                                    </div>
+                                    @endforeach
                                 </div>
                             @endif
+                        </div>
+
+                        <div class="col-6">
+                            <p class="mt-2 mb-1 text-muted fw-bold font-12 text-uppercase">Nomor Antrian</p>
+                            <div class="d-flex align-items-center">
+                                <i class='uil uil-number-square font-18 text-warning me-1'></i>
+                                <h5 class="mt-1 font-14">{{ $guest->queue_number ?? 'Tidak Ada Nomor Antrian' }}</h5>
+                            </div>
                         </div>
                     </div>
 
                     <div class="row mt-3">
                         <div class="col-6">
-                            <p class="mt-2 mb-1 text-muted fw-bold font-12 text-uppercase">Nomor Antrian</p>
-                            <div class="d-flex">
-                                <i class='uil uil-number-square font-18 text-warning me-1'></i>
-                                <div>
-                                    <h5 class="mt-1 font-14">
-                                        {{ $guest->queue_number ?? 'Tidak Ada Nomor Antrian' }}
-                                    </h5>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-6">
                             <p class="mt-2 mb-1 text-muted fw-bold font-12 text-uppercase">Sudah Berapa Lama</p>
-                            <div class="d-flex">
+                            <div class="d-flex align-items-center">
                                 <i class='uil uil-clock font-18 text-info me-1'></i>
-                                <div>
-                                    <h5 class="mt-1 font-14">
-                                        {{ \Carbon\Carbon::parse($guest->created_at)->diffForHumans() }}
-                                    </h5>
-                                </div>
+                                <h5 class="mt-1 font-14">{{ \Carbon\Carbon::parse($guest->created_at)->diffForHumans() }}
+                                </h5>
                             </div>
                         </div>
                     </div>
 
                     <h5 class="mt-3">Overview:</h5>
-                    <p class="text-muted mb-4">
-                        {{ $guest->purpose }}
-                    </p>
+                    <p class="text-muted mb-4" style="font-size: 1.1rem;">{{ $guest->purpose }}</p>
+                    <h5 class="mt-3">Bukti Janji:</h5>
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#photoModal" style="width: 300px;display: block;">
+                        <img src="{{ asset('/storage/' . $guest->guestPhoto->photo_path) }}" alt="Guest Photo"
+                            class="img-fluid rounded" style="width: 100%; height: auto; object-fit: cover;" />
+                    </a>
                 </div>
             </div>
         </div>
+
+
+
+        <div class="modal fade" id="photoModal" tabindex="-1" aria-labelledby="photoModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <img src="{{ asset('/storage/' . $guest->guestPhoto->photo_path) }}" class="img-fluid"
+                            alt="Guest Photo">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
 
 
         @if ($guest->status == 'pending')
@@ -146,7 +150,8 @@
 
                             <div class="mb-3" id="companionField" style="display: none;">
                                 <label for="companionSelect" class="form-label">Pendamping</label>
-                                <select class="form-control" id="companionSelect" name="companion_id">
+                                <select class="form-control" id="companionSelect" name="companion_id[]"
+                                    multiple="multiple">
                                     <option value="">Pilih Pendamping</option>
                                     @foreach ($companions as $cpn)
                                         <option value="{{ $cpn->id }}">{{ $cpn->companion_name }}</option>
@@ -273,37 +278,52 @@
             </div>
         @endif
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+        <!-- Include Select2 CSS and JS -->
+        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
         <script>
-            document.getElementById('statusSelect').addEventListener('change', function() {
-                var companionField = document.getElementById('companionField');
-                if (this.value === 'accepted' || this.value === 'disposition') {
-                    companionField.style.display = 'block';
-                } else {
-                    companionField.style.display = 'none';
-                }
-            });
+            $(document).ready(function() {
+                // Initialize Select2 with multiple select
+                $('#companionSelect').select2({
+                    placeholder: 'Pilih Pendamping',
+                    width: '100%',
+                    allowClear: true // Allows clearing selections
+                });
 
-            document.getElementById('updateForm').addEventListener('submit', function(event) {
-                var statusSelect = document.getElementById('statusSelect');
-                var companionField = document.getElementById('companionField');
-                var companionSelect = document.getElementById('companionSelect');
+                // Toggle Companion Field based on Status
+                $('#statusSelect').on('change', function() {
+                    var companionField = $('#companionField');
+                    if (this.value === 'accepted' || this.value === 'disposition') {
+                        companionField.show();
+                    } else {
+                        companionField.hide();
+                    }
+                });
 
-                if (statusSelect.value === "") {
-                    event.preventDefault();
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Oops...',
-                        text: 'Status harus dipilih!',
-                    });
-                } else if ((statusSelect.value === 'accepted' || statusSelect.value === 'disposition') &&
-                    companionSelect.value === "") {
-                    event.preventDefault();
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Oops...',
-                        text: 'Pendamping harus dipilih!',
-                    });
-                }
+                // Form Validation
+                $('#updateForm').on('submit', function(event) {
+                    var statusSelect = $('#statusSelect').val();
+                    var companionSelect = $('#companionSelect').val();
+
+                    if (statusSelect === "") {
+                        event.preventDefault();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'Status harus dipilih!',
+                        });
+                    } else if ((statusSelect === 'accepted' || statusSelect === 'disposition') &&
+                        companionSelect.length === 0) {
+                        event.preventDefault();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'Pendamping harus dipilih!',
+                        });
+                    }
+                });
             });
         </script>
         @push('scripts')

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('title', 250);
             $table->text('notulensi');
             $table->boolean('appointment')->default(false);
+            $table->bigInteger('created_by');
             $table->timestamps();
         });
     }
