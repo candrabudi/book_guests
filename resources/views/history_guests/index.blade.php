@@ -15,15 +15,16 @@
                 <div class="card-body">
                     <div class="row mb-2">
                         <div class="col-xl-8">
+
                             <form class="row gy-2 gx-2 align-items-center justify-content-xl-start justify-content-between"
                                 id="filterForm">
                                 <div class="col-auto">
-                                    <label for="inputSearch" class="visually-hidden">Search</label>
+                                    <label for="dateRange" class="me-2">Cari</label>
                                     <input type="search" class="form-control" id="inputSearch" placeholder="Search...">
                                 </div>
                                 <div class="col-auto">
+                                    <label for="status-select" class="me-2">Status</label>
                                     <div class="d-flex align-items-center">
-                                        <label for="status-select" class="me-2">Status</label>
                                         <select class="form-select" id="status-select">
                                             <option value="">Filter Status</option>
                                             <option value="pending">Pending</option>
@@ -34,6 +35,10 @@
                                             <option value="completed">Selesai</option>
                                         </select>
                                     </div>
+                                </div>
+                                <div class="col-auto">
+                                    <label for="dateRange" class="me-2">Pilih Rentang Tanggal</label>
+                                    <input type="text" class="form-control" id="dateRange" name="date_range">
                                 </div>
                             </form>
                         </div>
@@ -60,7 +65,7 @@
 
                     <nav>
                         <ul class="pagination pagination-rounded mb-0" id="pagination-links">
-                            <!-- Pagination links will be dynamically inserted here -->
+
                         </ul>
                     </nav>
 
@@ -70,19 +75,39 @@
     </div>
 
     @push('scripts')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
             integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
             crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.8/axios.min.js"
             integrity="sha512-v8+bPcpk4Sj7CKB11+gK/FnsbgQ15jTwZamnBf/xDmiQDcgOIYufBo6Acu1y30vrk8gg5su4x0CG3zfPaq5Fcg=="
             crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
         <script>
             document.addEventListener("DOMContentLoaded", function() {
                 const perPage = 10;
                 let currentPage = 1;
+                flatpickr("#dateRange", {
+                    mode: "range",
+                    dateFormat: "Y-m-d",
+                    onChange: function(selectedDates, dateStr, instance) {
+                        if (selectedDates.length === 2) {
+                            fetchGuests(currentPage);
+                        }
+                    }
+                });
 
-                function fetchGuests(page = 1, search = '', status = '') {
-                    axios.get(`/history/guests/list?page=${page}&search=${search}&per_page=${perPage}&status=${status}`)
+                function fetchGuests(page = 1, search = '', status = '', startDate = '', endDate = '') {
+                    const dateRange = document.getElementById('dateRange').value;
+                    const dates = dateRange.split(' to ');
+
+                    const start_date = dates[0] || '';
+                    const end_date = dates[1] || '';
+
+                    axios.get(
+                            `/history/guests/list?page=${page}&search=${search}&per_page=${perPage}&status=${status}&start_date=${start_date}&end_date=${end_date}`
+                        )
                         .then(response => {
                             const data = response.data;
                             const guests = data.data;

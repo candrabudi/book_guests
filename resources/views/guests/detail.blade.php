@@ -130,9 +130,6 @@
             </div>
         @endif
 
-
-
-
         @if ($guest->status == 'pending')
             <div class="col-xxl-4 col-xl-5">
                 <div class="card">
