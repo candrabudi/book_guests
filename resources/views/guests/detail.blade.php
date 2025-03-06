@@ -134,7 +134,7 @@
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title mb-3">Update Data</h5>
-                        <form id="updateForm" action="{{ route('guests.update', $guest->id) }}" method="POST">
+                        <form id="updateForm" action="{{ route('guests.updateStatus', $guest->id) }}" method="POST">
                             @csrf
 
                             <div class="mb-3">
