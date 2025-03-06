@@ -104,17 +104,19 @@
 
                     <h5 class="mt-3">Overview:</h5>
                     <p class="text-muted mb-4" style="font-size: 1.1rem;">{{ $guest->purpose }}</p>
-                    <h5 class="mt-3">Bukti Janji:</h5>
-                    <a href="#" data-bs-toggle="modal" data-bs-target="#photoModal" style="width: 300px;display: block;">
-                        <img src="{{ asset('/storage/' . $guest->guestPhoto->photo_path) }}" alt="Guest Photo"
-                            class="img-fluid rounded" style="width: 100%; height: auto; object-fit: cover;" />
-                    </a>
+                    @if ($guest->guestPhoto)    
+                        <h5 class="mt-3">Bukti Janji:</h5>
+                        <a href="#" data-bs-toggle="modal" data-bs-target="#photoModal" style="width: 300px;display: block;">
+                            <img src="{{ asset('/storage/' . $guest->guestPhoto->photo_path) }}" alt="Guest Photo"
+                                class="img-fluid rounded" style="width: 100%; height: auto; object-fit: cover;" />
+                        </a>
+                    @endif
                 </div>
             </div>
         </div>
 
 
-
+        @if ($guest->guestPhoto)    
         <div class="modal fade" id="photoModal" tabindex="-1" aria-labelledby="photoModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
@@ -125,6 +127,7 @@
                 </div>
             </div>
         </div>
+        @endif
 
 
 
